@@ -31,15 +31,19 @@ async def test_get(message: types.Message):
     from selenium import webdriver
     from selenium.webdriver import Keys
     from selenium.webdriver.common.by import By
-    from selenium.webdriver.chrome.service import Service
 
-    options = webdriver.ChromeOptions()
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
 
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                          'Chrome/102.0.5005.134 YaBrowser/22.7.0.1842 Yowser/2.5 Safari/537.36')
-    options.headless = True
-    s = Service(executable_path='handlers/chromedriver.exe')
-    driver = webdriver.Chrome(service=s, options=options)
+
+    chrome_options.headless = True
+
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
 
     try:
         driver.get('https://www.timeserver.ru/')
