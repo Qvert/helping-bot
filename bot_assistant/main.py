@@ -46,16 +46,17 @@ async def test_get(message: types.Message):
     driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
 
     try:
-        driver.get('https://www.timeserver.ru/')
+        driver.get('https://ru.hitmotop.com/')
         time.sleep(2)
-        city_input = driver.find_element(by=By.NAME, value='q')
+        city_input = driver.find_element(by=By.CLASS_NAME, value='form-control')
         city_input.clear()
-        city_input.send_keys('Чита')
+        city_input.send_keys('Экспайн')
         time.sleep(2)
         city_input.send_keys(Keys.ENTER)
         time.sleep(2)
-        hours = driver.find_element(by=By.CLASS_NAME, value='hours')
-        await message.answer(hours.text)
+        name = driver.find_elements(by=By.CLASS_NAME, value='track__title')
+        for el in name:
+            await message.answer(el.text)
 
     except Exception as err:
         print(err)
