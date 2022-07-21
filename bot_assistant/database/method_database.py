@@ -38,8 +38,8 @@ class UsersData:
         :return: None
         """
         stroka_zap = Template(
-            "UPDATE users SET data = $value "
-            "WHERE id_user = $id;"
+            "UPDATE users SET data = '$value' "
+            "WHERE id_user = '$id';"
         ).safe_substitute(
             data=data,
             value=value,
