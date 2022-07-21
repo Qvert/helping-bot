@@ -61,7 +61,10 @@ async def city_input_user(message: Message, state: FSMContext):
         zone_time = driver.find_elements(by=By.TAG_NAME, value='span')
         zone_time = [el.text.strip() for el in zone_time][18]
 
+        logger.debug(f'{text_city}: time_zone {zone_time}')
+
         db.update_data_base(data='time_zone', value=zone_time, id_us=message.from_user.id)
+
         logger.debug('Update zone_tim succsefull')
         await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
 
