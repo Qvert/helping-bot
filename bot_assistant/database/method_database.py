@@ -25,7 +25,7 @@ class UsersData:
             self.cursor.execute(
                 stroka_zap
             )
-            result = self.cursor.fetchall()[0]
+            result = self.cursor.fetchall()
             connection.commit()
             logger.debug(f'Get user_id from database {result}')
             return result

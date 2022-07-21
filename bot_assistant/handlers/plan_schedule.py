@@ -12,6 +12,9 @@ from loguru import logger
 from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import UncorrectedInputCity
+from bot_assistant.database.method_database import UsersData
+
+db = UsersData()
 
 
 async def welcome_message(message: Message):
@@ -29,7 +32,7 @@ async def get_button_text_city(message: Message):
 
 
 async def city_input_user(message: Message, state: FSMContext):
-    await message.answer('Сейчас мы установим ваш часовой пояс')
+    await message.answer('Сейчас мы установим ваш часовой пояс, пожалуйста ждите.')
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     chrome_options.add_argument("--headless")
@@ -57,6 +60,9 @@ async def city_input_user(message: Message, state: FSMContext):
 
         zone_time = driver.find_elements(by=By.TAG_NAME, value='span')
         zone_time = [el.text.strip() for el in zone_time][18]
+
+        db.update_data_base(data='time_zone', value=zone_time, id_us=message.from_user.id)
+        logger.debug('Update zone_tim succsefull')
         await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
 
     except UncorrectedInputCity as err:
