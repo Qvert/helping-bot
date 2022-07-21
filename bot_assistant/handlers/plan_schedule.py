@@ -67,6 +67,7 @@ async def city_input_user(message: Message, state: FSMContext):
 
         logger.debug('Update zone_tim succsefull')
         await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
+        await state.finish()
 
     except UncorrectedInputCity as err:
         logger.error(err)
