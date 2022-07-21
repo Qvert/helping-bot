@@ -24,47 +24,6 @@ dis = Dispatcher(bot, storage=MemoryStorage())
 db = UsersData()
 
 
-@dis.message_handler(commands='test')
-async def test_get(message: types.Message):
-    import time
-
-    from selenium import webdriver
-    from selenium.webdriver import Keys
-    from selenium.webdriver.common.by import By
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-
-    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                         'Chrome/102.0.5005.134 YaBrowser/22.7.0.1842 Yowser/2.5 Safari/537.36')
-
-    chrome_options.headless = True
-
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-
-    try:
-        driver.get('https://ru.hitmotop.com/')
-        time.sleep(2)
-        city_input = driver.find_element(by=By.CLASS_NAME, value='form-control')
-        city_input.clear()
-        city_input.send_keys('Экспайн')
-        time.sleep(2)
-        city_input.send_keys(Keys.ENTER)
-        time.sleep(2)
-        name = driver.find_elements(by=By.CLASS_NAME, value='track__title')
-        for el in name:
-            await message.answer(el.text)
-
-    except Exception as err:
-        print(err)
-    finally:
-        driver.close()
-        driver.quit()
-
-
 @dis.message_handler(commands='start')
 async def test_message(message: types.Message):
     if message.from_user.id not in db.get_data_base(data='id_user'):

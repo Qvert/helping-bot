@@ -30,13 +30,27 @@ class UsersData:
             logger.debug(f'Get user_id from database {result}')
             return result
 
-    def update_data_base(self, data: str, value: str) -> None:
+    def update_data_base(self, data: str, value: str, id_us: str) -> None:
         """
+        :param id_us: Айдишник пользователя
         :param data: Наименование поля в таблице базы данных
         :param value: Значение, которое хотим вставить
         :return: None
         """
-        pass
+        stroka_zap = Template(
+            "UPDATE users SET data = $value"
+            "WHERE id_user = $id;"
+        ).safe_substitute(
+            data=data,
+            value=value,
+            id=id_us
+        )
+        with self.connection:
+            self.cursor.execute(
+                stroka_zap
+            )
+            logger.info(f'Database update done !!!')
+            self.connection.commit()
 
     def insert_data_to_base(self, data: str, value: str) -> None:
         """
