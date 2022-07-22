@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import os
 import time
@@ -33,6 +34,56 @@ async def get_button_text_city(message: Message):
 
 async def city_input_user(message: Message, state: FSMContext):
     await message.answer('Сейчас мы установим ваш часовой пояс, пожалуйста ждите.')
+    zone_time = get_time_zone(text_city := message.text)
+    if zone_time is None:
+        await message.reply('Ой 😟, кажется вы допустили ошибку в написаний города.')
+
+    logger.debug(f'{text_city}: time_zone {zone_time}')
+
+    db.update_data_base(data='time_zone', value=zone_time[3:5], id_us=message.from_user.id)
+
+    logger.debug('Update zone_time succsefull')
+    await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
+    await message.answer(f'Теперь вы можете использовать планировщика')
+    await asyncio.sleep(2)
+    await message.answer(f'Для этого введите сначала событие, а потом ')
+    await state.finish()
+
+
+async def get_button_text_time_zone(message: Message):
+    await message.answer('⚠ Небольшая подсказка по введению часовго пояса!!! ⚠\n'
+                         '1. Вводить нужно относительно 00:00 и в формате ±H:00.'
+                         '2. Можете посмотреть свой часовой пояс на сайте https://www.timeserver.ru\n'
+                         '3. Для примера: у Москвы будет часовой пояс, отноcительно 00:00, +3:00'
+                         'Удачного использования планировщика 👋')
+
+    Scheduler_plan.time_zone_user.set()
+
+
+async def get_text_input_user(message: Message, state: FSMContext):
+    text_input_user = message.text
+    if '+' not in text_input_user or '-' not in text_input_user:
+        await message.reply('Обязательно должен присутствовать + или - в часовом поясе')
+    if not text_input_user.isdigit():
+        await message.reply('В часовом поясе должны быть цифры')
+
+    logger.info(f'Input text user: {text_input_user}')
+
+    db.update_data_base(data='time_zone', value=text_input_user, id_us=message.from_user.id)
+    logger.debug('Update zone_time succsefull')
+    await message.answer(f'Ваш часовой пояс установлен на: {text_input_user}')
+    await message.answer(f'Теперь вы можете использовать планировщика')
+    await asyncio.sleep(2)
+    await message.answer(f'Для того чтобы записать событие используйте запись типа:\n'
+                         f'[Событие] [Время в формате H:M] []')
+    await state.finish()
+
+
+def get_time_zone(query: str) -> None | str:
+    """
+    :param query: Get you tim_zone.
+    :return: List or stroka time_zone.
+    """
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     chrome_options.add_argument("--headless")
@@ -52,30 +103,19 @@ async def city_input_user(message: Message, state: FSMContext):
         logger.debug('Open source time_zone')
         city_input = driver.find_element(by=By.NAME, value='q')
         city_input.clear()
-        city_input.send_keys(text_city := message.text)
+        city_input.send_keys(text_city := query)
 
-        logger.info(f'Send serach {text_city}')
+        logger.info(f'Send search {text_city}')
 
         city_input.send_keys(Keys.ENTER)
 
         zone_time = driver.find_elements(by=By.TAG_NAME, value='span')
         zone_time = [el.text.strip() for el in zone_time][18]
-
-        logger.debug(f'{text_city}: time_zone {zone_time}')
-
-        db.update_data_base(data='time_zone', value=zone_time, id_us=message.from_user.id)
-
-        logger.debug('Update zone_tim succsefull')
-        await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
-        await state.finish()
+        return zone_time
 
     except UncorrectedInputCity as err:
         logger.error(err)
+        return
     finally:
         driver.close()
         driver.quit()
-
-
-async def get_button_text_time_zone(message: Message):
-    await message.answer('Введите пожалуйста свой часовой пояс в формате: ±HH:MM')
-

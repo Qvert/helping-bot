@@ -27,7 +27,7 @@ class UsersData:
             )
             result = self.cursor.fetchall()
             connection.commit()
-            logger.debug(f'Get user_id from database {result}')
+            logger.debug(f'Get {data} from database {result}')
             return result
 
     def update_data_base(self, data: str, value: str, id_us: str) -> None:

@@ -16,9 +16,5 @@ connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
         "reminder_time VARCHAR);"
     )
     connection.commit()'''
-'''with connection.cursor() as cursor:
-    cursor.execute(
-        'DROP TABLE users'
-    )
-    connection.commit()'''
+
 
