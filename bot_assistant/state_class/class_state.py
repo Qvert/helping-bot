@@ -44,3 +44,4 @@ class Scheduler_plan(StatesGroup):
     """
     get_name_city = State()
     time_zone_user = State()
+    get_plan_to_user = State()

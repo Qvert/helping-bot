@@ -4,3 +4,8 @@ class IntNotText(ValueError):
 
 class UncorrectedInputCity(Exception):
     pass
+
+
+class NoTimeUser(IntNotText):
+    pass
+

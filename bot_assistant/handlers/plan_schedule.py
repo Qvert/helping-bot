@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import os
+import re
 import time
 
 from selenium import webdriver
@@ -12,7 +13,7 @@ from loguru import logger
 
 from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
-from bot_assistant.utils_.class_error import UncorrectedInputCity
+from bot_assistant.utils_.class_error import UncorrectedInputCity, NoTimeUser
 from bot_assistant.database.method_database import UsersData
 
 db = UsersData()
@@ -37,6 +38,7 @@ async def city_input_user(message: Message, state: FSMContext):
     zone_time = get_time_zone(text_city := message.text)
     if zone_time is None:
         await message.reply('Ой 😟, кажется вы допустили ошибку в написаний города.')
+        return
 
     logger.debug(f'{text_city}: time_zone {zone_time}')
 
@@ -52,20 +54,16 @@ async def city_input_user(message: Message, state: FSMContext):
 
 async def get_button_text_time_zone(message: Message):
     await message.answer('⚠ Небольшая подсказка по введению часовго пояса!!! ⚠\n'
-                         '1. Вводить нужно относительно 00:00 и в формате ±H:00.'
+                         '1. Вводить нужно относительно 00:00 и в формате ±H:00.\n'
                          '2. Можете посмотреть свой часовой пояс на сайте https://www.timeserver.ru\n'
-                         '3. Для примера: у Москвы будет часовой пояс, отноcительно 00:00, +3:00'
+                         '3. Для примера: у Москвы будет часовой пояс, отноcительно 00:00, +3:00\n'
                          'Удачного использования планировщика 👋')
 
-    Scheduler_plan.time_zone_user.set()
+    await Scheduler_plan.time_zone_user.set()
 
 
 async def get_text_input_user(message: Message, state: FSMContext):
     text_input_user = message.text
-    if '+' not in text_input_user or '-' not in text_input_user:
-        await message.reply('Обязательно должен присутствовать + или - в часовом поясе')
-    if not text_input_user.isdigit():
-        await message.reply('В часовом поясе должны быть цифры')
 
     logger.info(f'Input text user: {text_input_user}')
 
@@ -75,8 +73,45 @@ async def get_text_input_user(message: Message, state: FSMContext):
     await message.answer(f'Теперь вы можете использовать планировщика')
     await asyncio.sleep(2)
     await message.answer(f'Для того чтобы записать событие используйте запись типа:\n'
-                         f'[Событие] [Время в формате H:M] []')
-    await state.finish()
+                         f'[Событие] [Время в формате HH:MM] [Через сколько времени должно случится событие]')
+    await Scheduler_plan.get_plan_to_user.set()
+
+
+async def get_plan_to_user_(message: Message):
+    """
+    :param message: Обработик сообщений
+    :return: Получаем план пользователя и обрабатываем его
+    """
+    text_user = message.text
+    logger.debug(f'Text plan for user {text_user}')
+    try:
+        time_user = re.search(r'\d\d:\d\d', text_user)
+        if time_user is None:
+            await message.reply('Пожалуйста проверьте правильность написания времени')
+            raise NoTimeUser
+
+        split_text_user = text_user.split(time_user[0])
+        logger.info(f'{split_text_user = }\n'
+                    f'{time_user = }')
+
+        # Добавляем в базу данных событие, которое случится у пользоватл\еля
+        db.update_data_base(data='event', value=split_text_user[0], id_us=message.from_user.id)
+        time_zone = db.get_data_base(data='time_zone', id_us=message.from_user.id)[0][0]
+        logger.info(f'Get time user: {time_zone}')
+        date_today = datetime.datetime.today()
+        date_today += datetime.timedelta(hours=int(time_zone[1]))
+
+        db.update_data_base(data='start_time', value=date_today.strftime("%Y-%m-%d-%H.%M.%S"),
+                            id_us=message.from_user.id)
+        logger.debug(f'Start from time: {date_today}')
+
+        # Текст, когда должно случиться событие
+        text_end_time = split_text_user[1]
+        logger.info(f'Info end time: {text_end_time}')
+
+    except NoTimeUser as err:
+        logger.error(err)
+        await message.reply('Пожалуйста проверьте правильность написания')
 
 
 def get_time_zone(query: str) -> None | str:

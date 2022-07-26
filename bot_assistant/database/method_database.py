@@ -11,15 +11,17 @@ class UsersData:
         self.connection = connection
         self.cursor = self.connection.cursor()
 
-    def get_data_base(self, data: str) -> tuple:
+    def get_data_base(self, data: str, id_us: str) -> tuple:
         """
+        :param id_us: Айди пользователя в телеграмм
         :param data: Значение, которое хотим получить
         :return: Кортеж со значениями
         """
         stroka_zap = Template(
-            "SELECT $data FROM users;"
+            "SELECT $data FROM users WHERE id_user = $id_us;"
         ).safe_substitute(
-            data=data
+            data=data,
+            id_us=id_us,
         )
         with self.connection:
             self.cursor.execute(
