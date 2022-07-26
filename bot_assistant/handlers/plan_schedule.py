@@ -3,6 +3,7 @@ import datetime
 import os
 import re
 import time
+import copy
 
 from selenium import webdriver
 from selenium.webdriver import Keys
@@ -15,6 +16,7 @@ from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import UncorrectedInputCity, NoTimeUser
 from bot_assistant.database.method_database import UsersData
+from bot_assistant.utils_.dict_weather_get import dict_plan_number_time, dict_plan_number_time_week
 
 db = UsersData()
 
@@ -106,8 +108,26 @@ async def get_plan_to_user_(message: Message):
         logger.debug(f'Start from time: {date_today}')
 
         # Текст, когда должно случиться событие
-        text_end_time = split_text_user[1]
+        text_end_time = split_text_user[1].strip()
         logger.info(f'Info end time: {text_end_time}')
+
+        date_end_str = copy.copy(date_today)
+
+        if 'через' in text_end_time:
+            split_char_time = text_end_time.split()[1:]
+            logger.info(f'{split_char_time = }')
+
+            number_time = split_char_time[0]
+            logger.info(f'{number_time = }')
+            # If user input day
+            if len(number_days_or_week := split_char_time[-1]) == 3 or len(number_days_or_week) == 4:
+                date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='days')
+
+            elif len(number_days_or_week) == 6 and 'недел' in number_days_or_week:
+                date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='week')
+
+            elif len(number_days_or_week) >= 5  and 'месяц' in number_days_or_week:
+                date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='month')
 
     except NoTimeUser as err:
         logger.error(err)
@@ -154,3 +174,35 @@ def get_time_zone(query: str) -> None | str:
     finally:
         driver.close()
         driver.quit()
+
+
+def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:
+    """
+    :param number_time: Промежуток во времени
+    :param date_end_str: Дата, когда должно случится событие
+    :param days_week_month: Условие, через день, месяц, недели произойдёт событие
+    :return: Дата, когда случится событие
+    """
+    if days_week_month == 'day':
+        if len(number_time) == 1:
+            date_end_str += datetime.timedelta(days=int(number_time))
+            return date_end_str
+        else:
+            date_end_str += datetime.timedelta(days=dict_plan_number_time[number_time])
+            return date_end_str
+
+    if days_week_month == 'week':
+        if len(number_time) == 1:
+            date_end_str += datetime.timedelta(weeks=int(number_time))
+            return date_end_str
+        else:
+            date_end_str += datetime.timedelta(weeks=dict_plan_number_time[number_time])
+            return date_end_str
+
+    if days_week_month == 'month':
+        if len(number_time) == 1:
+            date_end_str += datetime.timedelta(=int(number_time))
+            return date_end_str
+        else:
+            date_end_str += datetime.timedelta(weeks=dict_plan_number_time[number_time])
+            return date_end_str
