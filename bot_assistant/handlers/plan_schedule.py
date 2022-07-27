@@ -10,7 +10,8 @@ from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import NoTimeUser
 from bot_assistant.database.method_database import UsersData
-from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day
+from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day, \
+    dict_reminder_time
 from bot_assistant.utils_.selenium_parse import get_time_zone
 
 db = UsersData()
@@ -30,7 +31,7 @@ async def get_button_text_city(message: Message):
     await Scheduler_plan.get_name_city.set()
 
 
-async def city_input_user(message: Message, state: FSMContext):
+async def city_input_user(message: Message):
     await message.answer('Сейчас мы установим ваш часовой пояс, пожалуйста ждите.')
     zone_time = get_time_zone(text_city := message.text)
     if zone_time is None:
@@ -44,9 +45,10 @@ async def city_input_user(message: Message, state: FSMContext):
     logger.debug('Update zone_time succsefull')
     await message.answer(f'Ваш часовой пояс установлен на: {zone_time}')
     await message.answer(f'Теперь вы можете использовать планировщика')
-    await asyncio.sleep(2)
-    await message.answer(f'Для этого введите сначала событие, а потом ')
-    await state.finish()
+    await asyncio.sleep(1)
+    await message.answer(f'Для того чтобы записать событие используйте запись типа:\n'
+                         f'[Событие] [Время в формате HH:MM] [Через сколько времени должно случится событие]')
+    await Scheduler_plan.get_plan_to_user.set()
 
 
 async def get_button_text_time_zone(message: Message):
@@ -59,7 +61,7 @@ async def get_button_text_time_zone(message: Message):
     await Scheduler_plan.time_zone_user.set()
 
 
-async def get_text_input_user(message: Message, state: FSMContext):
+async def get_text_input_user(message: Message):
     text_input_user = message.text
 
     logger.info(f'Input text user: {text_input_user}')
@@ -132,10 +134,25 @@ async def get_plan_to_user_(message: Message):
 
         db.update_data_base(data='end_time', value=date_end_str,
                             id_us=message.from_user.id)
+        await message.answer('Ваша запись успешнго сохранена.\n'
+                             'Осталось только поставить время напоминания(10 минут, 2 часа и т.д)')
 
     except NoTimeUser as err:
         logger.error(err)
         await message.reply('Пожалуйста проверьте правильность написания')
+    finally:
+        await Scheduler_plan.reminder_time_user.set()
+
+
+async def post_reminder_time(message: Message):
+    time_reminder = message.text.split()
+    logger.info(f'{time_reminder = }')
+    for key in dict_reminder_time.keys():
+        if time_reminder[1][:3] == key:
+            time_rem = int(time_reminder[0]) * dict_reminder_time[key]
+            logger.info(f'Second reminder plan to user: {time_rem}')
+            db.update_data_base(data='reminder_time', value=str(time_rem), id_us=message.from_user.id)
+            break
 
 
 def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:

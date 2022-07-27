@@ -9,7 +9,7 @@ from art import *
 from database.method_database import UsersData
 from handlers.loading_music import post_music, get_name_music, load_music
 from handlers.plan_schedule import welcome_message, get_button_text_city, get_button_text_time_zone, city_input_user, \
-    get_text_input_user, get_plan_to_user_
+    get_text_input_user, get_plan_to_user_, post_reminder_time
 from handlers.post_review import review, review_get_text
 from handlers.search_method import get_text_search, post_get_search
 from handlers.translate import post_quastion_language, get_language_user, get_text_translate
@@ -85,6 +85,7 @@ def register_hundlers(dis: Dispatcher):
     dis.register_message_handler(city_input_user, state=Scheduler_plan.get_name_city)
     dis.register_message_handler(get_text_input_user, state=Scheduler_plan.time_zone_user)
     dis.register_message_handler(get_plan_to_user_, state=Scheduler_plan.get_plan_to_user)
+    dis.register_message_handler(post_reminder_time, state=Scheduler_plan.reminder_time_user)
 
 
 if __name__ == '__main__':

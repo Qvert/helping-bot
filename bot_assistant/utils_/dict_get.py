@@ -35,3 +35,9 @@ dict_next_day = MappingProxyType(
     }
 )
 
+dict_reminder_time = MappingProxyType(
+    {
+        'час': 3600,
+        'мин': 60,
+    }
+)

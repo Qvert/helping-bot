@@ -1,4 +1,4 @@
-import datetime
+'''import datetime
 
 date = datetime.datetime.today()
 date_today = date.strftime("%Y-%m-%d-%H-%M-%S")
@@ -10,3 +10,10 @@ print(datetime.datetime(year=date[0],
                         hour=date[3],
                         minute=date[4],
                         second=date[5]).hour)
+'''
+dict_ = {
+    'час': 3600,
+    'мин': 60
+}
+for key in dict_.keys():
+    print(key)
