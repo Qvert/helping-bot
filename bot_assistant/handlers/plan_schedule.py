@@ -10,7 +10,7 @@ from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import NoTimeUser
 from bot_assistant.database.method_database import UsersData
-from bot_assistant.utils_.dict_weather_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day
+from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day
 from bot_assistant.utils_.selenium_parse import get_time_zone
 
 db = UsersData()
@@ -124,11 +124,12 @@ async def get_plan_to_user_(message: Message):
             elif len(number_days_or_week) == 6 and 'недел' in number_days_or_week:
                 date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='week')
 
-            elif len(number_days_or_week) >= 5 and 'месяц' in number_days_or_week:
-                date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='month')
+            '''elif len(number_days_or_week) >= 5 and 'месяц' in number_days_or_week:
+                date_end_str = handler_time(date_end_str=date_end_str, number_time=number_time, days_week_month='month')'''
 
         elif len(text_end_time.split()) == 1:
             date_end_str += datetime.timedelta(days=dict_next_day[text_end_time])
+
         db.update_data_base(data='end_time', value=date_end_str,
                             id_us=message.from_user.id)
 
