@@ -1,4 +1,4 @@
-from .connected_to_database import connection
+from bot_assistant.database.connected_to_database import connection
 from string import Template
 from loguru import logger
 

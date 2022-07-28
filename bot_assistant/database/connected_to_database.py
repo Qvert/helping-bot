@@ -5,6 +5,7 @@ import os
 
 connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 
+
 '''with connection.cursor() as cursor:
     cursor.execute(
         "CREATE TABLE users ("

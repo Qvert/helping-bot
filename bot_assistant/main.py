@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from aiogram import Dispatcher, Bot, executor, types
@@ -6,7 +7,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from art import *
 
-from database.method_database import UsersData
 from handlers.loading_music import post_music, get_name_music, load_music
 from handlers.plan_schedule import welcome_message, get_button_text_city, get_button_text_time_zone, city_input_user, \
     get_text_input_user, get_plan_to_user_, post_reminder_time
@@ -16,12 +16,17 @@ from handlers.translate import post_quastion_language, get_language_user, get_te
 from handlers.weather import weather, get_weather_text
 from keyboard import keyboard_review
 from state_class.class_state import Weather, Review, GetNameMusic, TranslateClass, SearchEthernet, Scheduler_plan
+from bot_assistant.database.method_database import UsersData
+
 
 # Connected to bot
 bot = Bot(token=os.environ['BOT_TOKEN'])
 dis = Dispatcher(bot, storage=MemoryStorage())
 
-# Connected to database
+
+ioloop = asyncio.get_event_loop()
+
+
 db = UsersData()
 
 

@@ -6,13 +6,15 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 from loguru import logger
 
+from bot_assistant.database.method_database import UsersData
 from bot_assistant.keyboard import keyboard_plan
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import NoTimeUser
-from bot_assistant.database.method_database import UsersData
 from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day, \
     dict_reminder_time
+from bot_assistant.utils_.generation_stroka_to_database import generate_stroka_database
 from bot_assistant.utils_.selenium_parse import get_time_zone
+from bot_assistant.main import ioloop
 
 db = UsersData()
 
@@ -93,15 +95,17 @@ async def get_plan_to_user_(message: Message):
         logger.info(f'{split_text_user = }\n'
                     f'{time_user = }')
 
-        # Добавляем в базу данных событие, которое случится у пользоватл\еля
-        db.update_data_base(data='event', value=split_text_user[0], id_us=message.from_user.id)
+        # Добавляем в базу данных событие, которое случится у пользователя
+        generate_stroka_database(data_from_bd='event', value=split_text_user[0], id_user=message.from_user.id)
+
         time_zone = db.get_data_base(data='time_zone', id_us=message.from_user.id)[0][0]
         logger.info(f'Get time user: {time_zone}')
         date_today = datetime.datetime.today()
         date_today += datetime.timedelta(hours=int(time_zone[1]))
 
-        db.update_data_base(data='start_time', value=date_today.strftime("%Y-%m-%d-%H.%M.%S"),
-                            id_us=message.from_user.id)
+        generate_stroka_database(data_from_bd='start_time', value=date_today.strftime("%Y-%m-%d-%H.%M.%S"),
+                                 id_user=message.from_user.id)
+
         logger.debug(f'Start from time: {date_today}')
 
         # Текст, когда должно случиться событие
@@ -132,8 +136,9 @@ async def get_plan_to_user_(message: Message):
         elif len(text_end_time.split()) == 1:
             date_end_str += datetime.timedelta(days=dict_next_day[text_end_time])
 
-        db.update_data_base(data='end_time', value=date_end_str,
-                            id_us=message.from_user.id)
+        generate_stroka_database(data_from_bd='end_time', value=date_end_str,
+                                 id_user=message.from_user.id)
+
         await message.answer('Ваша запись успешнго сохранена.\n'
                              'Осталось только поставить время напоминания(10 минут, 2 часа и т.д)')
 
@@ -142,6 +147,13 @@ async def get_plan_to_user_(message: Message):
         await message.reply('Пожалуйста проверьте правильность написания')
     finally:
         await Scheduler_plan.reminder_time_user.set()
+
+
+async def send_message(message: Message, time_rem, event):
+    while True:
+        await asyncio.sleep(int(time_rem))
+        await message.answer(f'У вас событие: {event}')
+        print(event)
 
 
 async def post_reminder_time(message: Message):
@@ -153,6 +165,17 @@ async def post_reminder_time(message: Message):
             logger.info(f'Second reminder plan to user: {time_rem}')
             db.update_data_base(data='reminder_time', value=str(time_rem), id_us=message.from_user.id)
             break
+
+    event1 = ioloop.create_task(send_message(message=message,
+                                             time_rem=db.get_data_base(data='reminder_time',
+                                                                       id_us=message.from_user.id)[0][-1]),
+                                event=db.get_data_base(data='event',
+                                                       id_us=message.from_user.id)[0][-1])
+    # event2 = ioloop.create_task(foo(remider=time_[1], event=database[1]))
+    tasks = [event1]
+    wait_tasks = asyncio.wait(tasks)
+    ioloop.run_until_complete(wait_tasks)
+    ioloop.close()
 
 
 def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:

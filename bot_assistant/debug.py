@@ -11,9 +11,23 @@ print(datetime.datetime(year=date[0],
                         minute=date[4],
                         second=date[5]).hour)
 '''
-dict_ = {
-    'час': 3600,
-    'мин': 60
-}
-for key in dict_.keys():
-    print(key)
+import time
+import asyncio
+
+database = ['Пойти гулять', 'поесть']
+time_ = [5, 10]
+
+
+async def foo(remider, event):
+    while True:
+        await asyncio.sleep(remider)
+        print(event)
+
+ioloop = asyncio.get_event_loop()
+
+event1 = ioloop.create_task(foo(remider=time_[0], event=database[0]))
+# event2 = ioloop.create_task(foo(remider=time_[1], event=database[1]))
+tasks = [event1]
+wait_tasks = asyncio.wait(tasks)
+ioloop.run_until_complete(wait_tasks)
+ioloop.close()
