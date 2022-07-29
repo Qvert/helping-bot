@@ -3,13 +3,15 @@ from __future__ import annotations
 import asyncio
 import typing as ty
 
+from aiogram import types
 from aiogram.types import Message
 
 
-async def send_message(message: Message, time_rem: str, event: str) -> None:
+async def send_message(message: Message, time_rem: str, event: str, time_end: str) -> None:
     while True:
         await asyncio.sleep(int(time_rem))
-        await message.answer(f'У вас событие: {event}')
+        await message.answer(f'<b>Напоминаю</b>, что у вас запланировано событие: {event}\n'
+                             f'<b>Дата свершения:</b> {time_end}', parse_mode=types.ParseMode.HTML)
 
 
 async def main() -> ty.NoReturn:
@@ -17,6 +19,6 @@ async def main() -> ty.NoReturn:
         await asyncio.gather(pooling())
 
 
-async def pooling(message: Message, time_rem: str, event: str) -> None:
+async def pooling(message: Message, time_rem: str, event: str, time_end: str) -> None:
     if time_rem and event is not None:
-        asyncio.create_task(send_message(message=message, time_rem=time_rem, event=event))
+        asyncio.create_task(send_message(message=message, time_rem=time_rem, event=event, time_end=time_end))

@@ -27,7 +27,7 @@ async def welcome_message(message: Message):
                              f'Часовой пояс по умолчанию: +00:00', reply_markup=keyboard_plan)
 
     else:
-        await message.answer('Приветствую вас снова, вы можете сразу записать событие на напоминание?')
+        await message.answer('Что хотите записать сегодня, чтобы я напомнил вам?')
         await Scheduler_plan.get_plan_to_user.set()
 
 
@@ -165,7 +165,8 @@ async def post_reminder_time(message: Message):
     from bot_assistant.utils_.asyncio_polling import pooling
 
     await pooling(message=message, event=db.get_data_base(data='event', id_us=message.from_user.id)[0][0].split(', ')[-1],
-                  time_rem=db.get_data_base(data='reminder_time', id_us=message.from_user.id)[0][0].split(', ')[-1])
+                  time_rem=db.get_data_base(data='reminder_time', id_us=message.from_user.id)[0][0].split(', ')[-1],
+                  time_end=db.get_data_base(data='end_time', id_us=message.from_user.id)[0][0].split(', ')[-1])
 
 
 def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:
