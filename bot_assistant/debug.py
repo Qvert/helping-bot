@@ -11,23 +11,29 @@ print(datetime.datetime(year=date[0],
                         minute=date[4],
                         second=date[5]).hour)
 '''
-import time
+from __future__ import annotations
+
+import typing as ty
 import asyncio
-
-database = ['Пойти гулять', 'поесть']
-time_ = [5, 10]
+from aioconsole import ainput, aprint
 
 
-async def foo(remider, event):
+async def task(delay: int | float, text: str) -> None:
+    await asyncio.sleep(delay)
+    current_task = asyncio.current_task()
+    await aprint(f"{current_task.get_name()} >> {text}")
+
+
+async def pooling() -> None:
+    if data := await ainput('Введите задачу в таком формате "delay:text": '):
+        delay, text = data.split(":", maxsplit=1)
+        asyncio.create_task(task(float(delay), text))
+
+
+async def main() -> ty.NoReturn:
     while True:
-        await asyncio.sleep(remider)
-        print(event)
+        await asyncio.gather(pooling())
 
-ioloop = asyncio.get_event_loop()
 
-event1 = ioloop.create_task(foo(remider=time_[0], event=database[0]))
-# event2 = ioloop.create_task(foo(remider=time_[1], event=database[1]))
-tasks = [event1]
-wait_tasks = asyncio.wait(tasks)
-ioloop.run_until_complete(wait_tasks)
-ioloop.close()
+if __name__ == "__main__":
+    asyncio.run(main())

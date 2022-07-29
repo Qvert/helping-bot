@@ -14,7 +14,7 @@ def generate_stroka_database(data_from_bd: str, value: str, id_user: str) -> Non
 
     if data_user is not None:
         list_event = data_user.split(', ')
-        list_event.append()
+        list_event.append(value)
         db.update_data_base(data=data_from_bd, value=', '.join(list_event), id_us=id_user)
 
     else:

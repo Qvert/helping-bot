@@ -24,15 +24,12 @@ bot = Bot(token=os.environ['BOT_TOKEN'])
 dis = Dispatcher(bot, storage=MemoryStorage())
 
 
-ioloop = asyncio.get_event_loop()
-
-
 db = UsersData()
 
 
 @dis.message_handler(commands='start')
 async def test_message(message: types.Message):
-    if message.from_user.id not in db.get_data_base(data='id_user'):
+    if message.from_user.id not in db.get_data_base(data='id_user', id_us=message.from_user.id):
         db.insert_data_to_base(data='id_user', value=message.from_user.id)
 
     await message.answer('Хай👋 ! Я Assistant, ознакомься с тем что я могу.\n'
@@ -98,3 +95,6 @@ if __name__ == '__main__':
     # set_commands(dis)
     register_hundlers(dis)
     executor.start_polling(dis, skip_updates=True)
+
+    from utils_.asyncio_polling import main
+    asyncio.run(main())

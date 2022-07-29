@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import re
 
-from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 from loguru import logger
 
@@ -14,18 +13,22 @@ from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_numbe
     dict_reminder_time
 from bot_assistant.utils_.generation_stroka_to_database import generate_stroka_database
 from bot_assistant.utils_.selenium_parse import get_time_zone
-from bot_assistant.main import ioloop
 
 db = UsersData()
 
 
 async def welcome_message(message: Message):
-    await message.answer(f'Вас приветствует планировщик\n'
-                         f'Перед тем как использовать мой функционал\n'
-                         f'Нужно провести настройку часового пояса')
+    if db.get_data_base(data='time_zone', id_us=message.from_user.id)[0][0] is None:
+        await message.answer(f'Вас приветствует планировщик\n'
+                             f'Перед тем как использовать мой функционал\n'
+                             f'Нужно провести настройку часового пояса')
 
-    await message.answer(f'🛠 Выберите подходящую настройку.\n'
-                         f'Часовой пояс по умолчанию: +00:00', reply_markup=keyboard_plan)
+        await message.answer(f'🛠 Выберите подходящую настройку.\n'
+                             f'Часовой пояс по умолчанию: +00:00', reply_markup=keyboard_plan)
+
+    else:
+        await message.answer('Приветствую вас снова, вы можете сразу записать событие на напоминание?')
+        await Scheduler_plan.get_plan_to_user.set()
 
 
 async def get_button_text_city(message: Message):
@@ -136,10 +139,10 @@ async def get_plan_to_user_(message: Message):
         elif len(text_end_time.split()) == 1:
             date_end_str += datetime.timedelta(days=dict_next_day[text_end_time])
 
-        generate_stroka_database(data_from_bd='end_time', value=date_end_str,
+        generate_stroka_database(data_from_bd='end_time', value=date_end_str.strftime("%Y-%m-%d-%H.%M.%S"),
                                  id_user=message.from_user.id)
 
-        await message.answer('Ваша запись успешнго сохранена.\n'
+        await message.answer('Ваша запись успешно сохранена.\n'
                              'Осталось только поставить время напоминания(10 минут, 2 часа и т.д)')
 
     except NoTimeUser as err:
@@ -147,13 +150,6 @@ async def get_plan_to_user_(message: Message):
         await message.reply('Пожалуйста проверьте правильность написания')
     finally:
         await Scheduler_plan.reminder_time_user.set()
-
-
-async def send_message(message: Message, time_rem, event):
-    while True:
-        await asyncio.sleep(int(time_rem))
-        await message.answer(f'У вас событие: {event}')
-        print(event)
 
 
 async def post_reminder_time(message: Message):
@@ -166,16 +162,10 @@ async def post_reminder_time(message: Message):
             db.update_data_base(data='reminder_time', value=str(time_rem), id_us=message.from_user.id)
             break
 
-    event1 = ioloop.create_task(send_message(message=message,
-                                             time_rem=db.get_data_base(data='reminder_time',
-                                                                       id_us=message.from_user.id)[0][-1]),
-                                event=db.get_data_base(data='event',
-                                                       id_us=message.from_user.id)[0][-1])
-    # event2 = ioloop.create_task(foo(remider=time_[1], event=database[1]))
-    tasks = [event1]
-    wait_tasks = asyncio.wait(tasks)
-    ioloop.run_until_complete(wait_tasks)
-    ioloop.close()
+    from bot_assistant.utils_.asyncio_polling import pooling
+
+    await pooling(message=message, event=db.get_data_base(data='event', id_us=message.from_user.id)[0][0].split(', ')[-1],
+                  time_rem=db.get_data_base(data='reminder_time', id_us=message.from_user.id)[0][0].split(', ')[-1])
 
 
 def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:
