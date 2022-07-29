@@ -16,6 +16,11 @@ keyboard_translate.row(
         'Украйнский'
     ),
 )
+keyboard_translate.row(
+    KeyboardButton(
+        '❌ Отмена'
+    ),
+)
 
 # Клавиатура отмены выполнения команды
 keyboard_cancel = ReplyKeyboardMarkup(resize_keyboard=True)

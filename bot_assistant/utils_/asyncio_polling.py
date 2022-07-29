@@ -5,6 +5,9 @@ import typing as ty
 
 from aiogram import types
 from aiogram.types import Message
+from loguru import logger
+
+from bot_assistant.utils_.class_error import DontWritePlan
 
 
 async def send_message(message: Message, time_rem: str, event: str, time_end: str) -> None:
@@ -20,5 +23,13 @@ async def main() -> ty.NoReturn:
 
 
 async def pooling(message: Message, time_rem: str, event: str, time_end: str) -> None:
-    if time_rem and event is not None:
-        asyncio.create_task(send_message(message=message, time_rem=time_rem, event=event, time_end=time_end))
+    try:
+        if time_rem and event is not None:
+            asyncio.create_task(send_message(message=message, time_rem=time_rem, event=event, time_end=time_end))
+            await message.answer('Ваша запись успешно добавлена, ожидайте напоминания)')
+
+    except DontWritePlan as err:
+        logger.error(err)
+        await message.answer('Простите, случилась непредвиденная ошибка(')
+
+

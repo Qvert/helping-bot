@@ -9,3 +9,6 @@ class UncorrectedInputCity(Exception):
 class NoTimeUser(IntNotText):
     pass
 
+
+class DontWritePlan(UncorrectedInputCity):
+    pass
