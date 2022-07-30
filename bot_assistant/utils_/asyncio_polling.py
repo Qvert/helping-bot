@@ -13,7 +13,7 @@ from bot_assistant.utils_.class_error import DontWritePlan
 async def send_message(message: Message, time_rem: str, event: str, time_end: str) -> None:
     while True:
         await asyncio.sleep(int(time_rem))
-        await message.answer(f'<b>Напоминаю</b>, что у вас запланировано событие: {event}\n'
+        await message.answer(f'📢 <b>Напоминаю</b>, что у вас запланировано событие: {event}\n'
                              f'<b>Дата свершения:</b> {time_end}', parse_mode=types.ParseMode.HTML)
 
 
