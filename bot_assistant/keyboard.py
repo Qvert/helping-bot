@@ -13,7 +13,7 @@ keyboard_translate.row(
         'Английский'
     ),
     KeyboardButton(
-        'Украйнский'
+        'Украинский'
     ),
 )
 keyboard_translate.row(

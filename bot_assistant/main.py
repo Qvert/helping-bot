@@ -65,20 +65,6 @@ async def cancel(message: types.Message, state: FSMContext):
     await message.answer('🚫 Отменено', reply_markup=keyboard_review)
 
 
-# Инлайн кнопка и её обработка
-'''@dis.message_handler(commands='random')
-async def cmd_random(message: types.Message):
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text='Нажми меня', callback_data='random_value'))
-    await message.answer("Нажмите на кнопку, чтобы бот отправил число от 1 до 10", reply_markup=keyboard)
-
-
-@dis.callback_query_handler(text='random_value')
-async def send_random_value(call: types.CallbackQuery):
-    await call.answer()
-    await call.message.answer(str(random.randint(0, 10)))'''
-
-
 def register_hundlers(dis: Dispatcher):
     dis.register_message_handler(weather, commands='weather', state='*')
     dis.register_message_handler(get_weather_text, state=Weather.get_weather_place)

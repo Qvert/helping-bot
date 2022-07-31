@@ -3,6 +3,7 @@ import datetime
 import re
 
 from aiogram.types import Message
+from aiogram.dispatcher import FSMContext
 from loguru import logger
 
 from bot_assistant.database.method_database import UsersData
@@ -152,7 +153,7 @@ async def get_plan_to_user_(message: Message):
         await Scheduler_plan.reminder_time_user.set()
 
 
-async def post_reminder_time(message: Message):
+async def post_reminder_time(message: Message, state: FS):
     time_reminder = message.text.split()
     logger.info(f'{time_reminder = }')
     for key in dict_reminder_time.keys():
@@ -167,6 +168,8 @@ async def post_reminder_time(message: Message):
     await pooling(message=message, event=db.get_data_base(data='event', id_us=message.from_user.id)[0][0].split(', ')[-1],
                   time_rem=db.get_data_base(data='reminder_time', id_us=message.from_user.id)[0][0].split(', ')[-1],
                   time_end=db.get_data_base(data='end_time', id_us=message.from_user.id)[0][0].split(', ')[-1])
+
+    await state.finish()
 
 
 def handler_time(number_time: str, date_end_str: datetime, days_week_month: str) -> str:
