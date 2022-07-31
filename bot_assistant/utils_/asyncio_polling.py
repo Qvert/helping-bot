@@ -21,7 +21,7 @@ async def send_message(message: Message, time_rem: str, event: str, time_end: st
     :param time_end: Дата окончания
     :return:
     """
-    time_end_str = time_end
+    time_end_str = time_end.split('-')
     time_end_time = [int(el) for el in time_end_str[-1].split('.')]
 
     time_end_datetime = datetime.datetime(year=int(time_end_str[0]), month=int(time_end_str[1]),
