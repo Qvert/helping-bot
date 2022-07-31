@@ -153,7 +153,7 @@ async def get_plan_to_user_(message: Message):
         await Scheduler_plan.reminder_time_user.set()
 
 
-async def post_reminder_time(message: Message, state: FS):
+async def post_reminder_time(message: Message, state: FSMContext):
     time_reminder = message.text.split()
     logger.info(f'{time_reminder = }')
     for key in dict_reminder_time.keys():
