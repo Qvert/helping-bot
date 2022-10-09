@@ -1,4 +1,3 @@
-import asyncio
 from string import Template
 import os
 
@@ -9,6 +8,7 @@ from pyowm import OWM
 from loguru import logger
 
 from bot_assistant.state_class.class_state import Weather
+from bot_assistant.keyboard import keyboard_cancel
 
 
 async def weather(message: Message) -> None:
@@ -16,7 +16,8 @@ async def weather(message: Message) -> None:
     :param message: Message
     :return: Вход в состояние вопроса населённого пункта
     """
-    await message.answer('Введите пожалуйста населённый пункт где хотите узнать погоду')
+    await message.answer('Теперь можешь мне сказать🗣️ в каком месте нужно узнать погоду ☁️',
+                         reply_markup=keyboard_cancel)
     await Weather.get_weather_place.set()
 
 
@@ -30,15 +31,14 @@ async def get_weather_text(message: Message, state: FSMContext):
     try:
         owm = OWM(os.environ['TOKEN_OWM'])
         mgr = owm.weather_manager().weather_at_place(weather_place).weather
-        await message.answer(f'Сейчас минуточку')
-        await asyncio.sleep(2)
         stroke = Template('Вот что мне удалось найти\n\n'
                           'Сейчас в $place:\n'
-                          'Температура максимальная: $temp_max °C\n'
-                          'Температура средняя: $temp °C\n'
-                          'Температура минимальная: $temp_min °C\n'
-                          'Скорость ветра: $wind м/c\n'
-                          'Влажность: $hum%\n'
+                          '🌡 Температура:\n'
+                          '    Максимальная: $temp_max °C\n'
+                          '    Средняя: $temp °C\n'
+                          '    Минимальная: $temp_min °C\n'
+                          '💨 Скорость ветра: $wind м/c\n'
+                          '🌧 Влажность: $hum%\n'
                           '')\
             .safe_substitute(place=weather_place, temp=mgr.temperature('celsius')['temp'],
                              temp_max=mgr.temperature('celsius')['temp_max'],
@@ -46,11 +46,11 @@ async def get_weather_text(message: Message, state: FSMContext):
                              wind=mgr.wind()['speed'],
                              hum=mgr.humidity)
 
-    except pyowm.commons.exceptions.NotFoundError as err:
-        await message.reply('Пожалуйста проверьте правильность написания.')
-        logger.error(err)
-    finally:
         await message.answer(stroke)
+
+    except pyowm.commons.exceptions.NotFoundError as err:
+        await message.reply('Не могу разобрать 🧐 напиши понятнее 🖊️')
+        logger.error(err)
 
     await state.finish()
 

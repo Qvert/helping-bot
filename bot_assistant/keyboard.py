@@ -18,12 +18,23 @@ keyboard_translate.row(
 )
 keyboard_translate.row(
     KeyboardButton(
+        'Японский'
+    ),
+    KeyboardButton(
+        'Французский'
+    ),
+    KeyboardButton(
+        'Армянский'
+    ),
+)
+keyboard_translate.row(
+    KeyboardButton(
         '❌ Отмена'
     ),
 )
 
 # Клавиатура отмены выполнения команды
-keyboard_cancel = ReplyKeyboardMarkup(resize_keyboard=True)
+keyboard_cancel = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 keyboard_cancel.add('❌ Отмена')
 
 
@@ -39,4 +50,11 @@ keyboard_plan.row(
 )
 keyboard_plan.add(
     KeyboardButton('❌ Отмена')
+)
+
+keyboard_count_url = ReplyKeyboardMarkup(resize_keyboard=True)
+keyboard_count_url.add(
+    KeyboardButton(
+        'Изменить кол-во ссылок '
+    )
 )

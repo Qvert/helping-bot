@@ -7,7 +7,7 @@ from aiogram.dispatcher import FSMContext
 from loguru import logger
 
 from bot_assistant.database.method_database import UsersData
-from bot_assistant.keyboard import keyboard_plan
+from bot_assistant.keyboard import keyboard_plan, keyboard_cancel
 from bot_assistant.state_class.class_state import Scheduler_plan
 from bot_assistant.utils_.class_error import NoTimeUser
 from bot_assistant.utils_.dict_get import dict_plan_number_time, dict_plan_number_time_week, dict_next_day, \
@@ -28,7 +28,7 @@ async def welcome_message(message: Message):
                              f'Часовой пояс по умолчанию: +00:00', reply_markup=keyboard_plan)
 
     else:
-        await message.answer('Что хотите записать сегодня, чтобы я напомнил вам?')
+        await message.answer('Что хотите записать сегодня, чтобы я напомнил вам?', reply_markup=keyboard_cancel)
         await Scheduler_plan.get_plan_to_user.set()
 
 

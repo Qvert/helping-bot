@@ -10,8 +10,7 @@ from bot_assistant.state_class.class_state import TranslateClass
 
 
 async def post_quastion_language(message: Message):
-    await message.answer('Вы решили воспользоваться переводчиком\n'
-                         'Для этого выберите сначала язык на который хотите перевести текст',
+    await message.answer('Щас помогу тебе перевести текст 🤓 только выбери на какой язык хочешь 👅',
                          reply_markup=keyboard_translate)
     await TranslateClass.get_from_language.set()
 
@@ -21,7 +20,7 @@ async def get_language_user(message: Message, state: FSMContext):
     logger.info(f'{language = }')
 
     await state.update_data(lan=language)
-    await message.answer(f'Теперь введите текст, который нужно перевести', reply_markup=keyboard_review)
+    await message.answer(f'Напиши что надо перевести ✍️', reply_markup=keyboard_review)
     await TranslateClass.get_text_translate.set()
 
 
